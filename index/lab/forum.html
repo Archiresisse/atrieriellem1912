@@ -147,9 +147,13 @@ async function load(){
     const { threads = [] } = await r.json();
     render(threads);
   }catch(e){
-    list.innerHTML = `<div class="empty">還沒接上後端。<br>
-      把 <code>functions/api/lab-forum.js</code> 部署到 Cloudflare Pages，<br>
-      並綁定名為 <code>LAB_FORUM</code> 的 KV 命名空間就會通了。</div>`;
+    const local = location.protocol === "file:";
+    list.innerHTML = `<div class="empty">${local
+      ? "本機檔案模式沒有 /api，上傳到 Cloudflare Pages 後就會通。"
+      : `讀不到 <code>${API}</code>。<br>檢查兩件事：<br>
+         ① <code>functions/api/lab-forum.js</code> 在站台根目錄（和 lab/ 同層）<br>
+         ② Pages 綁了名為 <code>LAB_FORUM</code> 的 KV<br><br>
+         想確認後端活著，直接開 <code>${API}?diag=1</code> 看看回什麼。`}</div>`;
   }
 }
 
@@ -176,13 +180,21 @@ function render(threads){
 }
 
 async function post(payload, btn, msgEl){
-  btn.disabled = true; msgEl.textContent = "";
+  btn.disabled = true; msgEl.textContent = "送出中…";
   try{
+    if (location.protocol === "file:")
+      throw new Error("你現在是用本機檔案開啟的，/api 不存在。要上傳到 Cloudflare Pages 才能發文。");
     const r = await fetch(API, { method:"POST", headers:{ "Content-Type":"application/json" },
                                  body: JSON.stringify(payload) });
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(j.error || "送出失敗");
-    return true;
+    const txt = await r.text();
+    let j = null; try { j = JSON.parse(txt); } catch { /* 回來的不是 JSON */ }
+    if (!r.ok){
+      if (r.status === 404)
+        throw new Error("找不到 /api/lab-forum（404）。functions/ 資料夾要放在站台根目錄，和 lab/ 同一層。");
+      throw new Error(j?.error || `伺服器回 ${r.status}：${txt.slice(0,120)}`);
+    }
+    if (!j) throw new Error("伺服器沒有回傳 JSON，通常代表請求被靜態頁面接走了。");
+    msgEl.textContent = ""; return true;
   }catch(e){ msgEl.textContent = e.message; return false; }
   finally{ btn.disabled = false; }
 }

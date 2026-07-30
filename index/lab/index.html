@@ -83,6 +83,8 @@ a{color:inherit;text-decoration:none}
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
 }
 #fx{position:fixed;inset:0;z-index:4;pointer-events:none}
+/* 互動粒子要蓋在玻璃「上面」，不然拖曳灑出來的東西全被面板擋住看不見 */
+#fxTop{position:fixed;inset:0;z-index:55;pointer-events:none}
 
 /* 換幀時暫停推鏡並關掉滑鼠反光，讓合成器只需處理交叉淡入 */
 body.switching #stage-inner{animation-play-state:paused}
@@ -454,6 +456,7 @@ footer{
 <div id="scrim"></div>
 <div id="noise"></div>
 <canvas id="fx"></canvas>
+<canvas id="fxTop"></canvas>
 
 <header class="topbar">
   <a class="brand" href="/">atridarling.site<i>archive</i></a>
@@ -515,11 +518,11 @@ const SITE = {
    全站按鈕、標籤、光暈、粒子都會漸變成這組顏色。
    手機會自動改讀同名的 -sm.webp 小圖（要自己一起放進 assets）。 */
 const FRAMES = [
-  { name:"逆風",   src:"assets/hero/01-wind.webp",   pos:"center 30%", accent:"#64b5d8", warm:"#d16261" },
-  { name:"深水",   src:"assets/hero/06-deep.webp",   pos:"center 26%", accent:"#40c8fa", warm:"#7fa9ea" },
-  { name:"吹泡泡", src:"assets/hero/02-bubble.webp", pos:"center 22%", accent:"#43d3f9", warm:"#d1618b" },
-  { name:"草地",   src:"assets/hero/05-grass.webp",  pos:"center 40%", accent:"#d1d369", warm:"#dd6255" },
-  { name:"伸手",   src:"assets/hero/03-reach.webp",  pos:"center 20%", accent:"#47e0f5", warm:"#d16168" },
+  { name:"虞風",   src:"assets/hero/01-wind.webp",   pos:"center 30%", accent:"#64b5d8", warm:"#d16261" },
+  { name:"深海",   src:"assets/hero/06-deep.webp",   pos:"center 26%", accent:"#40c8fa", warm:"#7fa9ea" },
+  { name:"夏語", src:"assets/hero/02-bubble.webp", pos:"center 22%", accent:"#43d3f9", warm:"#d1618b" },
+  { name:"草華",   src:"assets/hero/05-grass.webp",  pos:"center 40%", accent:"#d1d369", warm:"#dd6255" },
+  { name:"傾羽",   src:"assets/hero/03-reach.webp",  pos:"center 20%", accent:"#47e0f5", warm:"#d16168" },
   { name:"踏石",   src:"assets/hero/04-stones.webp", pos:"center 30%", accent:"#5ecade", warm:"#db5857" }
 ];
 const FRAME_HOLD  = 11000;  // 每張停留幾毫秒（拉長＝重繪次數變少）
@@ -532,17 +535,11 @@ const TOOLS = [
     detail:{
       intro:"（這裡放詳細說明）這個工具解決什麼問題、怎麼用、跟同類工具差在哪。",
       points:["加密方式與金鑰保存位置","支援平台與安裝方式","資料匯出／備份怎麼做"],
-      links:[ { label:"下載", url:"#" }, { label:"原始碼", url:"#" } ]
+        links: [{ label: "setup下載", url:"https://github.com/Archiresisse/starlove_note/releases/tag/5586" } ]
     } },
   { name:"Phisorilla", desc:"去中心化端對端加密 P2P 訊息工具，不經伺服器中轉。",
     tags:["P2P","E2EE","桌面"], href:"#",
-    detail:{ intro:"（待補）", points:["（待補）"], links:[ { label:"下載", url:"#" } ] } },
-  { name:"繁體中文輸入法", desc:"Windows 平台、英語鍵盤直接打繁中，支援港／澳／台三種字形。",
-    tags:["Windows","TSF","IME"], href:"#",
-    detail:{ intro:"（待補）", points:["（待補）"], links:[ { label:"下載", url:"#" } ] } },
-  { name:"（待補）", desc:"照著上面的格式複製一整筆貼上，就多一張卡。",
-    tags:["範例"], href:"#",
-    detail:{ intro:"（待補）", points:[], links:[] } }
+      detail: { intro: "（待補）", points: ["（待補）"], links: [{ label: "下載", url:"https://github.com/Archiresisse/phisorillan/releases/tag/431" } ] } },
 ];
 
 /* ── [4] 免費訂閱連結 ───────────────────────────────────────── */
@@ -566,10 +563,9 @@ const NODE_NOTE = "節點由第三方免費提供，速度與可用性都不保�
 const FORUM_URL = "forum.html";   // 子站自己的小論壇；想改用主站那個就填 "/forum.html"
 const SUBS_API  = "/api/subs";    // 訂閱狀態 API（沒部署就自動略過，不影響頁面）
 const THREADS = [
-  { cat:"前端",    title:"React 拖動卡頓的四個真兇，以及怎麼一個一個抓出來", author:"凜霜", time:"3 天前", replies:12 },
-  { cat:"Windows", title:"TSF 輸入法踩坑筆記：候選窗不跟游標的那一週",      author:"凜霜", time:"1 週前", replies:7  },
-  { cat:"逆向",    title:"傳奇 M2 引擎腳本：面板不刷新到底卡在哪一層",       author:"凜霜", time:"2 週前", replies:5  },
-  { cat:"雜談",    title:"把個人站的粒子系統換成 Perlin 流場之後",           author:"凜霜", time:"3 週前", replies:9  }
+  { cat:"前端",    title:"React 拖動卡頓的四個真兇，以及怎麼一個一個抓出來", author:"Areis", time:"3 天前", replies:12 },
+  { cat:"Windows", title:"TSF 輸入法踩坑筆記：候選窗不跟游標的那一週",      author:"Areis", time:"1 週前", replies:7  },
+  { cat:"雜談",    title:"把個人站的粒子系統換成 Perlin 流場之後",           author:"Areis", time:"3 週前", replies:9  }
 ];
 
 /* ── [6] 個人遊戲（點卡片會展開成大標籤卡）───────────────────────
@@ -578,23 +574,27 @@ const THREADS = [
 const GAMES = [
   {
     name:"憲政與天下", desc:"五權憲政制度沙盒，一個人拆政體、改憲法、看國家怎麼歪掉。",
-    cover:"assets/hero/05-grass.webp", state:"開發中", wip:true, tags:["React","SVG","沙盒"],
+    cover:"assets/games/xianzheng/cover.webp", state:"可下載", wip:true, tags:["React","SVG","沙盒"],
     detail:{
-      intro:"（這裡放長介紹）一句話講清楚玩家在做什麼、為什麼有趣、目前完成到哪。三到五行最好讀。",
+      intro:"從 1836 年開局的政治制度沙盒。你不是在打仗，是在改制度——拆官署、調權柄、換憲法，然後看這個國家怎麼被自己的制度推著走。",
       features:[
-        "（特色一）例如：五院權力可自由增刪，憲法條文即時生效",
-        "（特色二）例如：民意、軍隊、財政三條線互相牽制",
-        "（特色三）例如：每局結束產生一份「國史」可匯出"
+        "權力網絡：官署可自由增刪，權柄與獨立程度即時牽動民主指數、行政效率與政變難度",
+        "制度模板：君主專制、三權分立、議會內閣制一鍵換憲，也能自己拼一套沒人見過的",
+        "國體參數：媒體自由、選舉權範圍、修憲門檻等變量互相拉扯，革命進度滿了就翻車",
+        "全球地圖：省份開發度、宗主與佔領狀態，可平面／球形切換，支援國家、地形、政黨、民意、合法五種染色"
       ],
-      shots:["assets/hero/05-grass.webp","assets/hero/01-wind.webp"],   // 換成遊戲截圖
+      shots:[                                        // 截圖走資料夾路徑，換圖只要換檔名
+        "assets/games/xianzheng/01-map.webp",
+        "assets/games/xianzheng/02-gov.webp",
+        "assets/games/xianzheng/03-system.webp"
+      ],
       downloads:[                                                       // ← .rar 貼這裡
-        { label:"完整版", ver:"v0.9.2", size:"148 MB", url:"#",
+          {
+              label: "完整版", ver: "v0.9.2", size: "116 MB", url:"https://github.com/Archiresisse/ConstitutionRulesWorld/releases/tag/114514",
           note:"解壓後執行 start.exe；首次啟動會建立存檔資料夾。" },
-        { label:"精簡版", ver:"v0.9.2", size:"62 MB",  url:"#",
-          note:"不含語音與高解析素材，適合舊機器。" }
       ],
-      sysreq:"Windows 10 以上 · 4 GB RAM · 不需獨顯　／　瀏覽器版免安裝",
-      links:[ { label:"線上試玩", url:"#" }, { label:"更新日誌", url:"#" } ]
+      sysreq:"Windows 10 以上 ·至少 4 GB RAM · 建議獨顯　",
+        links: [{ label: "下載", url:"https://github.com/Archiresisse/ConstitutionRulesWorld/releases/tag/114514" } ]
     }
   },
   {
@@ -832,6 +832,7 @@ function watch(root = document){
 function fxLayer(){
   if (RM) return;
   const cv = document.getElementById("fx"), ctx = cv.getContext("2d");
+  const cvT = document.getElementById("fxTop"), ctxT = cvT.getContext("2d");
   let bubbles = [], flora = [], burst = [], lily = [];
   let mx = -999, my = -999, down = false, lastEmit = 0;
 
@@ -848,9 +849,10 @@ function fxLayer(){
 
   const resize = () => {
     const dpr = Math.min(devicePixelRatio||1, 1.5);
-    cv.width = innerWidth*dpr; cv.height = innerHeight*dpr;
-    cv.style.width = innerWidth+"px"; cv.style.height = innerHeight+"px";
-    ctx.setTransform(dpr,0,0,dpr,0,0);
+    cv.width = cvT.width = innerWidth*dpr; cv.height = cvT.height = innerHeight*dpr;
+    cv.style.width = cvT.style.width = innerWidth+"px";
+    cv.style.height = cvT.style.height = innerHeight+"px";
+    ctx.setTransform(dpr,0,0,dpr,0,0); ctxT.setTransform(dpr,0,0,dpr,0,0);
     const nb = FX.bubbles ? Math.round(Math.min(innerWidth,1600)/(SMALL?34:20)) : 0;
     bubbles = Array.from({length:nb}, () => ({
       x: Math.random()*innerWidth, y: Math.random()*innerHeight,
@@ -863,8 +865,10 @@ function fxLayer(){
   resize();
 
   /* —— 畫花瓣 / 葉子 —— */
+  let g2 = null;                       // 目前作畫的畫布
+  const use = c => { g2 = c; };
   function petal(x,y,r,s,a,leaf){
-    ctx.save(); ctx.translate(x,y); ctx.rotate(r);
+    const ctx = g2; ctx.save(); ctx.translate(x,y); ctx.rotate(r);
     ctx.beginPath();
     if (leaf){
       ctx.moveTo(0,-s); ctx.quadraticCurveTo(s*.55,0, 0,s); ctx.quadraticCurveTo(-s*.55,0, 0,-s);
@@ -885,7 +889,7 @@ function fxLayer(){
                  [.3,.14],[.38,.4],[.14,.32],[.16,.86],[0,.66],[-.16,.86],[-.14,.32],
                  [-.38,.4],[-.3,.14],[-.86,.16],[-.6,-.06],[-.72,-.22],[-.32,-.42],[-.4,-.68],[-.12,-.62]];
   function maple(x,y,r,s,a){
-    ctx.save(); ctx.translate(x,y); ctx.rotate(r); ctx.scale(s,s);
+    const ctx = g2; ctx.save(); ctx.translate(x,y); ctx.rotate(r); ctx.scale(s,s);
     ctx.beginPath(); ctx.moveTo(MAPLE[0][0],MAPLE[0][1]);
     for (let i=1;i<MAPLE.length;i++) ctx.lineTo(MAPLE[i][0],MAPLE[i][1]);
     ctx.closePath();
@@ -897,13 +901,13 @@ function fxLayer(){
     ctx.restore();
   }
   function spark(x,y,s,a){
-    ctx.beginPath(); ctx.arc(x,y,s*.34,0,6.2832);
+    const ctx = g2; ctx.beginPath(); ctx.arc(x,y,s*.34,0,6.2832);
     ctx.fillStyle = PALE(a); ctx.fill();
     ctx.beginPath(); ctx.arc(x,y,s*.8,0,6.2832);
     ctx.fillStyle = BLUE(a*.35); ctx.fill();
   }
   function heart(x,y,r,s,a){
-    ctx.save(); ctx.translate(x,y); ctx.rotate(r); ctx.scale(s/16,s/16);
+    const ctx = g2; ctx.save(); ctx.translate(x,y); ctx.rotate(r); ctx.scale(s/16,s/16);
     ctx.beginPath(); ctx.moveTo(0,5);
     ctx.bezierCurveTo(-14,-6,-8,-16,0,-8);
     ctx.bezierCurveTo(8,-16,14,-6,0,5);
@@ -911,7 +915,7 @@ function fxLayer(){
     ctx.restore();
   }
   function mail(x,y,r,s,a){
-    ctx.save(); ctx.translate(x,y); ctx.rotate(r);
+    const ctx = g2; ctx.save(); ctx.translate(x,y); ctx.rotate(r);
     const w = s*1.35, h = s;
     ctx.beginPath(); ctx.roundRect(-w/2,-h/2,w,h,2.5);
     ctx.fillStyle = PALE(a*.9); ctx.fill();
@@ -921,6 +925,7 @@ function fxLayer(){
   }
   /* —— 彼岸花：六片外翻花瓣 + 長蕊 —— */
   function spiderLily(x,y,t,size){
+    const ctx = g2;
     const e = 1 - Math.pow(1-t, 3), a = (1-t) * .9;
     ctx.save(); ctx.translate(x,y);
     for (let i = 0; i < 6; i++){
@@ -954,7 +959,7 @@ function fxLayer(){
 
   addEventListener("pointermove", e => {
     mx = e.clientX; my = e.clientY;
-    if (down && FX.dragConfetti && performance.now() - lastEmit > 16){
+    if ((down || (e.buttons & 1)) && FX.dragConfetti && performance.now() - lastEmit > 16){
       lastEmit = performance.now();
       const n = SMALL ? 2 : 3;
       for (let i = 0; i < n; i++)
@@ -996,6 +1001,8 @@ function fxLayer(){
     if (document.hidden) return;
     t += .01;
     ctx.clearRect(0,0,innerWidth,innerHeight);
+    ctxT.clearRect(0,0,innerWidth,innerHeight);
+    use(ctx);
 
     const [cr,cg,cb] = hex2rgb(ACCENT);
     for (const p of bubbles){
@@ -1015,27 +1022,28 @@ function fxLayer(){
       petal(f.x, f.y, f.r, f.s, f.a, f.leaf);
     }
 
+    use(ctxT);                          // 以下畫在最上層，才不會被玻璃蓋住
     for (let i = burst.length-1; i >= 0; i--){
       const b = burst[i]; b.t += dt;
       if (b.t > b.life){ burst.splice(i,1); continue; }
       b.vy += 22*dt*.06; b.vx *= .992;
       b.x += b.vx; b.y += b.vy; b.r += b.vr;
       const a = (1 - b.t/b.life) * .95;
-      ctx.shadowColor = "rgba(130,200,255,.85)"; ctx.shadowBlur = 14;
+      ctxT.shadowColor = "rgba(130,200,255,.85)"; ctxT.shadowBlur = 14;
       if (b.kind === "petal")      petal(b.x,b.y,b.r,b.s,a,false);
       else if (b.kind === "maple") maple(b.x,b.y,b.r*.5,b.s*.62,a);
       else if (b.kind === "heart") heart(b.x,b.y,b.r*.3,b.s,a);
       else if (b.kind === "spark") spark(b.x,b.y,b.s*.7,a);
       else                          mail(b.x,b.y,b.r*.25,b.s,a);
-      ctx.shadowBlur = 0;
+      ctxT.shadowBlur = 0;
     }
 
     for (let i = lily.length-1; i >= 0; i--){
       const L = lily[i]; L.t += dt/1.25;
       if (L.t >= 1){ lily.splice(i,1); continue; }
-      ctx.shadowColor = "rgba(150,215,255,.9)"; ctx.shadowBlur = 18;
+      ctxT.shadowColor = "rgba(150,215,255,.9)"; ctxT.shadowBlur = 18;
       spiderLily(L.x, L.y, L.t, L.size);
-      ctx.shadowBlur = 0;
+      ctxT.shadowBlur = 0;
     }
   })(performance.now());
 }
